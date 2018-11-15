@@ -13,7 +13,7 @@ from homeassistant.components.device_tracker import (
     PLATFORM_SCHEMA, SOURCE_TYPE_GPS)
 from homeassistant.const import (
     ATTR_ID, CONF_PASSWORD, CONF_USERNAME, ATTR_BATTERY_CHARGING,
-    ATTR_BATTERY_LEVEL)
+    ATTR_BATTERY_LEVEL, CONF_FILENAME)
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.event import track_time_interval
 from homeassistant.helpers.typing import ConfigType
@@ -38,6 +38,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_PASSWORD): cv.string,
     vol.Required(CONF_USERNAME): cv.string,
     vol.Optional(CONF_MAX_GPS_ACCURACY, default=100000): vol.Coerce(float),
+    vol.Optional(CONF_FILENAME, default=CREDENTIALS_FILE): cv.string,
 })
 
 
@@ -58,11 +59,12 @@ class GoogleMapsScanner:
         self.see = see
         self.username = config[CONF_USERNAME]
         self.password = config[CONF_PASSWORD]
+        self.filename = config[CONF_FILENAME]
         self.max_gps_accuracy = config[CONF_MAX_GPS_ACCURACY]
 
         try:
             self.service = Service(self.username, self.password,
-                                   hass.config.path(CREDENTIALS_FILE))
+                                   hass.config.path(self.filename))
             self._update_info()
 
             track_time_interval(
